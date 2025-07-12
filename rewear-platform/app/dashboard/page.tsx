@@ -387,14 +387,6 @@ export default function DashboardPage() {
                       <span>Items Listed:</span>
                       <span className="font-medium">{stats.totalItems}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Total Swaps:</span>
-                      <span className="font-medium">{stats.completedSwaps}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Average Rating:</span>
-                      <span className="font-medium">{stats.averageRating.toFixed(1)} ⭐</span>
-                    </div>
                   </div>
                 </div>
               </CardContent>
