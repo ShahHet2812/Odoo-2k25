@@ -26,60 +26,68 @@ import {
   Calendar,
   MapPin,
   Edit,
+  Coins,
 } from "lucide-react"
 
 export default function DashboardPage() {
   const { user, isAuthenticated } = useAuth()
+  const [items, setItems] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
     totalItems: 0,
-    activeItems: 0,
     totalViews: 0,
     totalLikes: 0,
-    completedSwaps: 0,
-    pendingSwaps: 0,
-    averageRating: 0,
+    totalSwaps: 0,
+    points: user?.points || 0
   })
   const [recentItems, setRecentItems] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (user) {
-      loadDashboardData()
+      loadUserData()
     }
   }, [user])
 
-  const loadDashboardData = async () => {
-    if (!user) return
-
+  const loadUserData = async () => {
     setLoading(true)
     try {
-      // Load user stats
-      const statsResponse = await apiClient.getUserStats(user.id)
-      if (statsResponse.success && statsResponse.data) {
-        const data = statsResponse.data as any
-        setStats(data.stats || {
-          totalItems: 0,
-          activeItems: 0,
-          totalViews: 0,
-          totalLikes: 0,
-          completedSwaps: 0,
-          pendingSwaps: 0,
-          averageRating: 0,
-        })
-      }
-
-      // Load recent items
-      const itemsResponse = await apiClient.getUserItems(user.id, { page: 1, limit: 5 })
+      // Load user items
+      const itemsResponse = await apiClient.getUserItems(user!.id)
+      
       if (itemsResponse.success && itemsResponse.data) {
         const data = itemsResponse.data as any
-        setRecentItems(data.items || [])
+        setItems(data.items || [])
+        setStats(prev => ({
+          ...prev,
+          totalItems: data.items?.length || 0,
+          totalViews: data.items?.reduce((sum: number, item: any) => sum + (item.views || 0), 0) || 0,
+          totalLikes: data.items?.reduce((sum: number, item: any) => sum + (item.likes || 0), 0) || 0,
+          points: user?.points || 0
+        }))
       } else {
         // Fallback to demo storage
-        const demoItems = demoStorage.getUserItems(user.id)
-        setRecentItems(demoItems.slice(0, 5))
+        const demoItems = demoStorage.getUserItems(user!.id)
+        setItems(demoItems)
+        setStats(prev => ({
+          ...prev,
+          totalItems: demoItems.length,
+          totalViews: demoItems.reduce((sum, item) => sum + (item.views || 0), 0),
+          totalLikes: demoItems.reduce((sum, item) => sum + (item.likes || 0), 0),
+          points: user?.points || 0
+        }))
       }
     } catch (error) {
-      console.error('Error loading dashboard data:', error)
+      console.error('Error loading user data:', error)
+      // Fallback to demo storage
+      const demoItems = demoStorage.getUserItems(user!.id)
+      setItems(demoItems)
+      setStats(prev => ({
+        ...prev,
+        totalItems: demoItems.length,
+        totalViews: demoItems.reduce((sum, item) => sum + (item.views || 0), 0),
+        totalLikes: demoItems.reduce((sum, item) => sum + (item.likes || 0), 0),
+        points: user?.points || 0
+      }))
     } finally {
       setLoading(false)
     }
@@ -217,52 +225,60 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          {/* Stats Grid */}
+          {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Card>
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Active Items</p>
-                    <p className="text-2xl font-bold">{stats.activeItems}</p>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Package className="h-6 w-6 text-green-600" />
                   </div>
-                  <Package className="h-8 w-8 text-blue-600" />
+                  <div>
+                    <p className="text-sm text-gray-600">Items Listed</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.totalItems}</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Views</p>
-                    <p className="text-2xl font-bold">{stats.totalViews}</p>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Eye className="h-6 w-6 text-blue-600" />
                   </div>
-                  <Eye className="h-8 w-8 text-green-600" />
+                  <div>
+                    <p className="text-sm text-gray-600">Total Views</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.totalViews}</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Likes</p>
-                    <p className="text-2xl font-bold">{stats.totalLikes}</p>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-red-100 rounded-lg">
+                    <Heart className="h-6 w-6 text-red-600" />
                   </div>
-                  <Heart className="h-8 w-8 text-red-600" />
+                  <div>
+                    <p className="text-sm text-gray-600">Total Likes</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.totalLikes}</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Completed Swaps</p>
-                    <p className="text-2xl font-bold">{stats.completedSwaps}</p>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-yellow-100 rounded-lg">
+                    <Coins className="h-6 w-6 text-yellow-600" />
                   </div>
-                  <ArrowUpDown className="h-8 w-8 text-purple-600" />
+                  <div>
+                    <p className="text-sm text-gray-600">Your Points</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.points}</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>

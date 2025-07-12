@@ -20,14 +20,21 @@ import { Label } from "@/components/ui/label"
 import { ArrowLeft, Heart, Share2, Star, MapPin, Calendar, Package, ArrowUpDown, Coins } from "lucide-react"
 import { apiClient } from "@/lib/api"
 import { demoStorage } from "@/lib/demo-storage"
+import { Navigation } from "@/components/navigation"
+import { useAuth } from "@/lib/auth"
+import { useToast } from "@/hooks/use-toast"
 
 export default function ItemDetailPage({ params }: { params: { id: string } }) {
+  const { user } = useAuth()
+  const { toast } = useToast()
   const [item, setItem] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [selectedImage, setSelectedImage] = useState(0)
   const [isLiked, setIsLiked] = useState(false)
   const [swapMessage, setSwapMessage] = useState("")
+  const [swapDialogOpen, setSwapDialogOpen] = useState(false)
+  const [swapLoading, setSwapLoading] = useState(false)
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -84,44 +91,85 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
     )
   }
 
-  const handleSwapRequest = () => {
-    console.log("Swap request:", { itemId: params.id, message: swapMessage })
-    // Handle swap request logic
+  const handleSwapRequest = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to request a swap.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setSwapLoading(true)
+    try {
+      // Calculate points difference
+      const userPoints = user.points || 0
+      const itemPoints = item.points || 0
+      const pointsDifference = itemPoints - userPoints
+
+      if (pointsDifference > 0 && userPoints < itemPoints) {
+        toast({
+          title: "Insufficient points",
+          description: `You need ${pointsDifference} more points to swap for this item.`,
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Create swap request
+      const swapData = {
+        requestedItem: item._id,
+        swapType: "points",
+        pointsInvolved: itemPoints,
+        message: swapMessage
+      }
+
+      const response = await apiClient.createSwap(swapData)
+      
+      if (response.success) {
+        toast({
+          title: "Swap request sent!",
+          description: "The item owner will be notified of your request.",
+          variant: "default",
+        })
+        setSwapDialogOpen(false)
+        setSwapMessage("")
+      } else {
+        throw new Error(response.message || "Failed to send swap request")
+      }
+    } catch (error) {
+      console.error('Error creating swap:', error)
+      toast({
+        title: "Error",
+        description: "Failed to send swap request. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setSwapLoading(false)
+    }
   }
 
   const handlePointsRedeem = () => {
-    console.log("Points redemption:", { itemId: params.id, points: item.points })
-    // Handle points redemption logic
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to redeem points.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    toast({
+      title: "Points redemption",
+      description: `Redeem ${item.points} points for this item.`,
+      variant: "default",
+    })
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/browse" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
-            <ArrowLeft className="h-5 w-5" />
-            Back to Browse
-          </Link>
-          <Link href="/" className="flex items-center gap-2">
-            <Package className="h-6 w-6 text-green-600" />
-            <span className="text-xl font-bold">ReWear</span>
-          </Link>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsLiked(!isLiked)}
-              className={isLiked ? "text-red-500" : ""}
-            >
-              <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <Share2 className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Navigation />
 
       <div className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-2 gap-8">
@@ -209,7 +257,7 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
 
             {/* Action Buttons */}
             <div className="space-y-3">
-              <Dialog>
+              <Dialog open={swapDialogOpen} onOpenChange={setSwapDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="w-full" size="lg">
                     <ArrowUpDown className="h-5 w-5 mr-2" />
@@ -228,13 +276,13 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
                       <Label htmlFor="message">Message (Optional)</Label>
                       <Textarea
                         id="message"
-                        placeholder="Hi! I'm interested in swapping for your vintage denim jacket..."
+                        placeholder="Hi! I'm interested in swapping for your item..."
                         value={swapMessage}
                         onChange={(e) => setSwapMessage(e.target.value)}
                       />
                     </div>
-                    <Button onClick={handleSwapRequest} className="w-full">
-                      Send Swap Request
+                    <Button onClick={handleSwapRequest} className="w-full" disabled={swapLoading}>
+                      {swapLoading ? "Sending..." : "Send Swap Request"}
                     </Button>
                   </div>
                 </DialogContent>
@@ -246,10 +294,10 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
               </Button>
             </div>
 
-            {/* Uploader Info */}
+            {/* User Info */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Listed by</CardTitle>
+                <CardTitle className="text-lg">Item Owner</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-start gap-4">
@@ -286,10 +334,10 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
 
             {/* Item Stats */}
             <div className="flex justify-between text-sm text-gray-600">
-              <span>Listed on {item.listedDate}</span>
+              <span>Listed on {new Date(item.createdAt).toLocaleDateString()}</span>
               <div className="flex gap-4">
-                <span>{item.views} views</span>
-                <span>{item.likes} likes</span>
+                <span>{item.views || 0} views</span>
+                <span>{item.likes || 0} likes</span>
               </div>
             </div>
           </div>

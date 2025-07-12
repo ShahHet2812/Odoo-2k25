@@ -42,35 +42,72 @@ export default function BrowsePage() {
   const loadItems = async () => {
     setLoading(true)
     try {
-      const response = await apiClient.getItems({
+      // Prepare filter parameters
+      const filterParams: any = {
         page: 1,
         limit: 50,
-        search: searchTerm,
-        category: selectedCategory !== "all" ? selectedCategory : undefined,
-        size: selectedSize !== "all" ? selectedSize : undefined,
-        sort: sortBy,
-      })
+      }
+
+      if (searchTerm) {
+        filterParams.search = searchTerm
+      }
+
+      if (selectedCategory !== "all") {
+        filterParams.category = selectedCategory
+      }
+
+      if (selectedSize !== "all") {
+        filterParams.size = selectedSize
+      }
+
+      // Map frontend sort to backend sort
+      const sortMapping: { [key: string]: string } = {
+        "newest": "newest",
+        "oldest": "oldest", 
+        "points": "points_high",
+        "points-asc": "points_low"
+      }
+      filterParams.sort = sortMapping[sortBy] || "newest"
+
+      console.log('Loading items with filters:', filterParams)
+      const response = await apiClient.getItems(filterParams)
 
       if (response.success && response.data) {
         const data = response.data as any
+        console.log('Items loaded from API:', data.items?.length || 0)
         setItems(data.items || [])
       } else {
+        console.log('API failed, using demo storage')
         // Fallback to demo storage
         let demoItems = demoStorage.getItems()
         
-        // Apply filters
+        // Apply filters to demo items
         if (searchTerm) {
           demoItems = demoStorage.searchItems(searchTerm)
         }
         
         if (selectedCategory !== "all") {
-          demoItems = demoItems.filter(item => item.category.toLowerCase() === selectedCategory.toLowerCase())
+          demoItems = demoItems.filter(item => 
+            item.category.toLowerCase() === selectedCategory.toLowerCase()
+          )
         }
         
         if (selectedSize !== "all") {
           demoItems = demoItems.filter(item => item.size === selectedSize)
         }
         
+        // Apply sorting to demo items
+        if (sortBy === "newest") {
+          demoItems.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        } else if (sortBy === "oldest") {
+          demoItems.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+        } else if (sortBy === "points") {
+          demoItems.sort((a, b) => b.points - a.points)
+        } else if (sortBy === "points-asc") {
+          demoItems.sort((a, b) => a.points - b.points)
+        }
+        
+        console.log('Demo items after filtering:', demoItems.length)
         setItems(demoItems)
       }
     } catch (error) {
@@ -84,11 +121,24 @@ export default function BrowsePage() {
       }
       
       if (selectedCategory !== "all") {
-        demoItems = demoItems.filter(item => item.category.toLowerCase() === selectedCategory.toLowerCase())
+        demoItems = demoItems.filter(item => 
+          item.category.toLowerCase() === selectedCategory.toLowerCase()
+        )
       }
       
       if (selectedSize !== "all") {
         demoItems = demoItems.filter(item => item.size === selectedSize)
+      }
+      
+      // Apply sorting
+      if (sortBy === "newest") {
+        demoItems.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      } else if (sortBy === "oldest") {
+        demoItems.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+      } else if (sortBy === "points") {
+        demoItems.sort((a, b) => b.points - a.points)
+      } else if (sortBy === "points-asc") {
+        demoItems.sort((a, b) => a.points - b.points)
       }
       
       setItems(demoItems)

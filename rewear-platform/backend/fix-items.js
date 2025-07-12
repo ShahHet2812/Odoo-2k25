@@ -13,31 +13,36 @@ async function fixItems() {
   try {
     console.log('Starting to fix items...');
     
-    // Find all items that don't have status or isApproved set
+    // Find all items that don't have required fields
     const itemsToFix = await Item.find({
       $or: [
         { status: { $exists: false } },
         { isApproved: { $exists: false } },
         { status: { $ne: 'available' } },
-        { isApproved: { $ne: true } }
+        { isApproved: { $ne: true } },
+        { uploader: { $exists: false } }
       ]
     });
     
     console.log(`Found ${itemsToFix.length} items to fix`);
     
     if (itemsToFix.length === 0) {
-      console.log('No items need fixing. All items already have correct status.');
+      console.log('No items need fixing. All items already have correct fields.');
       return;
     }
     
-    // Update all items to have correct status
+    // Create a default user ID for items that don't have uploader
+    const defaultUserId = new mongoose.Types.ObjectId();
+    
+    // Update all items to have correct status and uploader
     const updateResult = await Item.updateMany(
       {},
       {
         $set: {
           status: 'available',
           isApproved: true,
-          availability: 'Available'
+          availability: 'Available',
+          uploader: defaultUserId // Add default uploader if missing
         }
       }
     );
@@ -47,14 +52,16 @@ async function fixItems() {
     // Verify the fix
     const totalItems = await Item.countDocuments();
     const availableItems = await Item.countDocuments({ status: 'available', isApproved: true });
+    const itemsWithUploader = await Item.countDocuments({ uploader: { $exists: true } });
     
     console.log(`Total items in database: ${totalItems}`);
     console.log(`Available and approved items: ${availableItems}`);
+    console.log(`Items with uploader field: ${itemsWithUploader}`);
     
-    if (availableItems > 0) {
+    if (availableItems > 0 && itemsWithUploader > 0) {
       console.log('✅ Items should now be visible on the frontend!');
     } else {
-      console.log('❌ No items are available. Check if items exist in the database.');
+      console.log('❌ Some items may still have issues. Check the counts above.');
     }
     
   } catch (error) {
