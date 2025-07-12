@@ -149,10 +149,10 @@ export default function DashboardPage() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-3xl font-bold text-green-800 mb-2">
                   Welcome back, {user?.firstName || 'User'}!
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-green-600">
                   Here's what's happening with your sustainable fashion journey.
                 </p>
               </div>
@@ -175,10 +175,10 @@ export default function DashboardPage() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <h2 className="text-xl font-semibold mb-1">
+                    <h2 className="text-xl font-semibold text-green-800 mb-1">
                       {user?.firstName} {user?.lastName}
                     </h2>
-                    <p className="text-gray-600 mb-2">{user?.email}</p>
+                    <p className="text-green-600 mb-2">{user?.email}</p>
                     <div className="flex items-center gap-4 text-sm text-gray-500">
                       {user?.location && (
                         <div className="flex items-center gap-1">
@@ -268,13 +268,13 @@ export default function DashboardPage() {
             {/* Recent Activity */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Recent Activity
-                </CardTitle>
-                <CardDescription>
-                  Your latest items and interactions
-                </CardDescription>
+                                 <CardTitle className="flex items-center gap-2 text-green-800">
+                   <TrendingUp className="h-5 w-5" />
+                   Recent Activity
+                 </CardTitle>
+                 <CardDescription className="text-green-600">
+                   Your latest items and interactions
+                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {recentItems.length > 0 ? (
@@ -305,8 +305,8 @@ export default function DashboardPage() {
                 ) : (
                   <div className="text-center py-8">
                     <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No items yet</h3>
-                    <p className="text-gray-600 mb-4">Start by adding your first item to the platform.</p>
+                                       <h3 className="text-lg font-semibold text-green-800 mb-2">No items yet</h3>
+                   <p className="text-green-600 mb-4">Start by adding your first item to the platform.</p>
                     <Link href="/add-item">
                       <Button>
                         <Plus className="h-4 w-4 mr-2" />
@@ -321,13 +321,13 @@ export default function DashboardPage() {
             {/* Quick Actions */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="h-5 w-5" />
-                  Quick Actions
-                </CardTitle>
-                <CardDescription>
-                  Common tasks and shortcuts
-                </CardDescription>
+                                 <CardTitle className="flex items-center gap-2 text-green-800">
+                   <Award className="h-5 w-5" />
+                   Quick Actions
+                 </CardTitle>
+                 <CardDescription className="text-green-600">
+                   Common tasks and shortcuts
+                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -359,8 +359,8 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Stats Summary */}
-                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-medium mb-3">Your Impact</h4>
+                                 <div className="mt-6 p-4 bg-green-50 rounded-lg">
+                   <h4 className="font-medium mb-3 text-green-800">Your Impact</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>Items Listed:</span>

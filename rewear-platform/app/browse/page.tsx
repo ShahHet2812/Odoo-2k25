@@ -187,10 +187,10 @@ export default function BrowsePage() {
 
         {/* Results */}
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <h2 className="text-2xl font-bold text-green-800 mb-2">
             {loading ? "Loading..." : `${items.length} items found`}
           </h2>
-          <p className="text-gray-600">
+          <p className="text-green-600">
             Discover sustainable fashion items from our community
           </p>
         </div>
@@ -301,10 +301,10 @@ export default function BrowsePage() {
           <Card>
             <CardContent className="p-8 text-center">
               <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No items found</h3>
-              <p className="text-gray-600 mb-4">
-                Try adjusting your search criteria or browse all items.
-              </p>
+                             <h3 className="text-lg font-semibold text-green-800 mb-2">No items found</h3>
+               <p className="text-green-600 mb-4">
+                 Try adjusting your search criteria or browse all items.
+               </p>
               <div className="flex gap-2 justify-center">
                 <Button variant="outline" onClick={() => {
                   setSearchTerm("")

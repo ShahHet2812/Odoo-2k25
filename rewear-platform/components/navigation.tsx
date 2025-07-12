@@ -28,27 +28,29 @@ export function Navigation() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <Package className="h-6 w-6 text-green-600" />
-            <span className="text-xl font-bold">ReWear</span>
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+              <Package className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-gray-900">ReWear</span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-4">
             <Link href="/browse">
-              <Button variant="ghost" className="text-gray-700 hover:text-gray-900">
+              <Button variant="ghost" className="text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
                 Browse
               </Button>
             </Link>
             {user ? (
               <>
                 <Link href="/add-item">
-                  <Button className="bg-green-600 hover:bg-green-700">
+                  <Button className="bg-green-600 hover:bg-green-700 transition-all duration-200">
                     Add Item
                   </Button>
                 </Link>
                 <Link href="/dashboard">
-                  <Button variant="ghost" className="text-gray-700 hover:text-gray-900">
+                  <Button variant="ghost" className="text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
                     Dashboard
                   </Button>
                 </Link>
@@ -56,12 +58,12 @@ export function Navigation() {
             ) : (
               <>
                 <Link href="/how-it-works">
-                  <Button variant="ghost" className="text-gray-700 hover:text-gray-900">
+                  <Button variant="ghost" className="text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
                     How It Works
                   </Button>
                 </Link>
                 <Link href="/about">
-                  <Button variant="ghost" className="text-gray-700 hover:text-gray-900">
+                  <Button variant="ghost" className="text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
                     About
                   </Button>
                 </Link>
@@ -74,20 +76,20 @@ export function Navigation() {
             {user ? (
               <div className="flex items-center gap-3">
                 <Link href="/settings">
-                  <Button variant="ghost" size="sm" className="text-gray-700 hover:text-gray-900">
+                  <Button variant="ghost" size="sm" className="text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
                     <Settings className="h-4 w-4" />
                   </Button>
                 </Link>
                 <div className="flex items-center gap-2">
                   <Link href="/settings">
-                    <Avatar className="h-8 w-8 cursor-pointer hover:opacity-80 transition-opacity">
+                    <Avatar className="h-8 w-8 cursor-pointer hover:opacity-80 transition-all duration-200 ring-2 ring-transparent hover:ring-green-200">
                       <AvatarImage src={user.avatar} />
-                      <AvatarFallback className="bg-gray-200 text-gray-700">
+                      <AvatarFallback className="bg-green-100 text-green-700 font-medium">
                         {user.firstName?.[0]}{user.lastName?.[0]}
                       </AvatarFallback>
                     </Avatar>
                   </Link>
-                  <Button variant="ghost" size="sm" onClick={handleLogout} className="text-gray-700 hover:text-gray-900">
+                  <Button variant="ghost" size="sm" onClick={handleLogout} className="text-gray-700 hover:text-red-600 hover:bg-red-50 transition-all duration-200">
                     <LogOut className="h-4 w-4" />
                   </Button>
                 </div>
@@ -95,12 +97,12 @@ export function Navigation() {
             ) : (
               <>
                 <Link href="/login">
-                  <Button variant="ghost" className="text-gray-700 hover:text-gray-900">
+                  <Button variant="ghost" className="text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
                     Login
                   </Button>
                 </Link>
                 <Link href="/signup">
-                  <Button className="bg-green-600 hover:bg-green-700">
+                  <Button className="bg-green-600 hover:bg-green-700 transition-all duration-200">
                     Sign Up
                   </Button>
                 </Link>
@@ -112,7 +114,7 @@ export function Navigation() {
           <Button
             variant="ghost"
             size="sm"
-            className="md:hidden text-gray-700 hover:text-gray-900"
+            className="md:hidden text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -121,32 +123,32 @@ export function Navigation() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t pt-4">
+          <div className="md:hidden mt-4 pb-4 border-t pt-4 animate-in slide-in-from-top-2 duration-200">
             <nav className="flex flex-col gap-2">
               <Link href="/browse">
-                <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-gray-900">
+                <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
                   Browse
                 </Button>
               </Link>
               {user ? (
                 <>
                   <Link href="/add-item">
-                    <Button className="w-full justify-start bg-green-600 hover:bg-green-700">
+                    <Button className="w-full justify-start bg-green-600 hover:bg-green-700 transition-all duration-200">
                       Add Item
                     </Button>
                   </Link>
                   <Link href="/dashboard">
-                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-gray-900">
+                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
                       Dashboard
                     </Button>
                   </Link>
                   <Link href="/settings">
-                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-gray-900">
+                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
                       <Settings className="h-4 w-4 mr-2" />
                       Settings
                     </Button>
                   </Link>
-                  <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-gray-900" onClick={handleLogout}>
+                  <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-red-600 hover:bg-red-50 transition-all duration-200" onClick={handleLogout}>
                     <LogOut className="h-4 w-4 mr-2" />
                     Logout
                   </Button>
@@ -154,22 +156,22 @@ export function Navigation() {
               ) : (
                 <>
                   <Link href="/how-it-works">
-                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-gray-900">
+                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
                       How It Works
                     </Button>
                   </Link>
                   <Link href="/about">
-                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-gray-900">
+                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
                       About
                     </Button>
                   </Link>
                   <Link href="/login">
-                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-gray-900">
+                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
                       Login
                     </Button>
                   </Link>
                   <Link href="/signup">
-                    <Button className="w-full justify-start bg-green-600 hover:bg-green-700">
+                    <Button className="w-full justify-start bg-green-600 hover:bg-green-700 transition-all duration-200">
                       Sign Up
                     </Button>
                   </Link>
