@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuth } from "@/lib/auth"
 import { apiClient } from "@/lib/api"
+import { Navigation } from "@/components/navigation"
 import {
   Package,
   Search,
@@ -109,44 +110,7 @@ export default function BrowsePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Package className="h-6 w-6 text-green-600" />
-            <span className="text-xl font-bold">ReWear</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/browse">
-              <Button variant="ghost">Browse</Button>
-            </Link>
-            {user ? (
-              <>
-                <Link href="/add-item">
-                  <Button>Add Item</Button>
-                </Link>
-                <Link href="/dashboard">
-                  <Button variant="ghost">Dashboard</Button>
-                </Link>
-                <Link href="/settings">
-                  <Button variant="ghost" size="sm">
-                    <User className="h-4 w-4" />
-                  </Button>
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link href="/login">
-                  <Button variant="ghost">Login</Button>
-                </Link>
-                <Link href="/signup">
-                  <Button>Sign Up</Button>
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+      <Navigation />
 
       <div className="container mx-auto px-4 py-8">
         {/* Search and Filters */}

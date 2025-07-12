@@ -184,7 +184,7 @@ export default function ProfilePage() {
                         )}
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          Member since {profileUser.joinDate || 'Recently'}
+                          Member since {profileUser.joinDate ? new Date(profileUser.joinDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Recently'}
                         </div>
                       </div>
                       {profileUser.bio && (

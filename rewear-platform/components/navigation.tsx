@@ -34,26 +34,36 @@ export function Navigation() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-4">
             <Link href="/browse">
-              <Button variant="ghost">Browse</Button>
+              <Button variant="ghost" className="text-gray-700 hover:text-gray-900">
+                Browse
+              </Button>
             </Link>
             {user ? (
               <>
                 <Link href="/add-item">
-                  <Button>Add Item</Button>
+                  <Button className="bg-green-600 hover:bg-green-700">
+                    Add Item
+                  </Button>
                 </Link>
                 <Link href="/dashboard">
-                  <Button variant="ghost">Dashboard</Button>
+                  <Button variant="ghost" className="text-gray-700 hover:text-gray-900">
+                    Dashboard
+                  </Button>
                 </Link>
               </>
             ) : (
               <>
                 <Link href="/how-it-works">
-                  <Button variant="ghost">How It Works</Button>
+                  <Button variant="ghost" className="text-gray-700 hover:text-gray-900">
+                    How It Works
+                  </Button>
                 </Link>
                 <Link href="/about">
-                  <Button variant="ghost">About</Button>
+                  <Button variant="ghost" className="text-gray-700 hover:text-gray-900">
+                    About
+                  </Button>
                 </Link>
               </>
             )}
@@ -64,18 +74,20 @@ export function Navigation() {
             {user ? (
               <div className="flex items-center gap-3">
                 <Link href="/settings">
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" className="text-gray-700 hover:text-gray-900">
                     <Settings className="h-4 w-4" />
                   </Button>
                 </Link>
                 <div className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.avatar} />
-                    <AvatarFallback>
-                      {user.firstName?.[0]}{user.lastName?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  <Link href="/settings">
+                    <Avatar className="h-8 w-8 cursor-pointer hover:opacity-80 transition-opacity">
+                      <AvatarImage src={user.avatar} />
+                      <AvatarFallback className="bg-gray-200 text-gray-700">
+                        {user.firstName?.[0]}{user.lastName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Link>
+                  <Button variant="ghost" size="sm" onClick={handleLogout} className="text-gray-700 hover:text-gray-900">
                     <LogOut className="h-4 w-4" />
                   </Button>
                 </div>
@@ -83,10 +95,14 @@ export function Navigation() {
             ) : (
               <>
                 <Link href="/login">
-                  <Button variant="ghost">Login</Button>
+                  <Button variant="ghost" className="text-gray-700 hover:text-gray-900">
+                    Login
+                  </Button>
                 </Link>
                 <Link href="/signup">
-                  <Button>Sign Up</Button>
+                  <Button className="bg-green-600 hover:bg-green-700">
+                    Sign Up
+                  </Button>
                 </Link>
               </>
             )}
@@ -96,7 +112,7 @@ export function Navigation() {
           <Button
             variant="ghost"
             size="sm"
-            className="md:hidden"
+            className="md:hidden text-gray-700 hover:text-gray-900"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -108,29 +124,29 @@ export function Navigation() {
           <div className="md:hidden mt-4 pb-4 border-t pt-4">
             <nav className="flex flex-col gap-2">
               <Link href="/browse">
-                <Button variant="ghost" className="w-full justify-start">
+                <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-gray-900">
                   Browse
                 </Button>
               </Link>
               {user ? (
                 <>
                   <Link href="/add-item">
-                    <Button className="w-full justify-start">
+                    <Button className="w-full justify-start bg-green-600 hover:bg-green-700">
                       Add Item
                     </Button>
                   </Link>
                   <Link href="/dashboard">
-                    <Button variant="ghost" className="w-full justify-start">
+                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-gray-900">
                       Dashboard
                     </Button>
                   </Link>
                   <Link href="/settings">
-                    <Button variant="ghost" className="w-full justify-start">
+                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-gray-900">
                       <Settings className="h-4 w-4 mr-2" />
                       Settings
                     </Button>
                   </Link>
-                  <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
+                  <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-gray-900" onClick={handleLogout}>
                     <LogOut className="h-4 w-4 mr-2" />
                     Logout
                   </Button>
@@ -138,22 +154,22 @@ export function Navigation() {
               ) : (
                 <>
                   <Link href="/how-it-works">
-                    <Button variant="ghost" className="w-full justify-start">
+                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-gray-900">
                       How It Works
                     </Button>
                   </Link>
                   <Link href="/about">
-                    <Button variant="ghost" className="w-full justify-start">
+                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-gray-900">
                       About
                     </Button>
                   </Link>
                   <Link href="/login">
-                    <Button variant="ghost" className="w-full justify-start">
+                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-gray-900">
                       Login
                     </Button>
                   </Link>
                   <Link href="/signup">
-                    <Button className="w-full justify-start">
+                    <Button className="w-full justify-start bg-green-600 hover:bg-green-700">
                       Sign Up
                     </Button>
                   </Link>

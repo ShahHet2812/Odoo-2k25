@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
 import { useAuth } from "@/lib/auth"
 import { apiClient } from "@/lib/api"
+import { Navigation } from "@/components/navigation"
 import {
   Package,
   ArrowUpDown,
@@ -140,39 +141,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Package className="h-6 w-6 text-green-600" />
-              <span className="text-xl font-bold">ReWear</span>
-            </div>
-            <Badge variant="outline" className="ml-4">
-              {user?.level || 'Bronze Swapper'}
-            </Badge>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/add-item">
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Item
-              </Button>
-            </Link>
-            <Link href="/settings">
-              <Button variant="ghost" size="sm">
-                <Settings className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Avatar className="h-8 w-8">
-              <AvatarImage src={user?.avatar} />
-              <AvatarFallback>
-                {user?.firstName?.[0]}{user?.lastName?.[0]}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-        </div>
-      </header>
+      <Navigation />
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
@@ -217,10 +186,10 @@ export default function DashboardPage() {
                           {user.location}
                         </div>
                       )}
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        Member since {user?.joinDate || 'Recently'}
-                      </div>
+                                              <div className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          Member since {user?.joinDate ? new Date(user.joinDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Recently'}
+                        </div>
                     </div>
                   </div>
                   <div className="text-right">

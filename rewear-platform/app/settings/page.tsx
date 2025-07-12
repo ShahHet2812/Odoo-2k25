@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth"
 import { apiClient } from "@/lib/api"
+import { Navigation } from "@/components/navigation"
 import {
   User,
   Settings,
@@ -294,20 +295,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
-            <User className="h-5 w-5" />
-            Back to Dashboard
-          </Link>
-          <div className="flex items-center gap-2">
-            <Settings className="h-6 w-6 text-green-600" />
-            <span className="text-xl font-bold">Settings</span>
-          </div>
-          <div className="w-20"></div>
-        </div>
-      </header>
+      <Navigation />
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
