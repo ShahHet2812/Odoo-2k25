@@ -31,7 +31,7 @@ const sampleItems = [
       lastName: "Johnson",
       avatar: "/placeholder-user.jpg"
     },
-    createdAt: new Date("2024-01-15T10:30:00Z")
+    createdAt: new Date("2024-01-15")
   },
   {
     title: "Organic Cotton T-Shirt",
@@ -52,7 +52,7 @@ const sampleItems = [
       lastName: "Chen",
       avatar: "/placeholder-user.jpg"
     },
-    createdAt: new Date("2024-01-20T14:45:00Z")
+    createdAt: new Date("2024-01-20")
   },
   {
     title: "High-Waisted Jeans",
@@ -157,7 +157,7 @@ const sampleItems = [
       lastName: "Taylor",
       avatar: "/placeholder-user.jpg"
     },
-    createdAt: new Date("2024-02-15T10:00:00Z")
+    createdAt: new Date("2024-02-15")
   },
   {
     title: "Pencil Skirt",

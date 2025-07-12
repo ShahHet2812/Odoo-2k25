@@ -25,7 +25,7 @@ const pendingItems = [
     uploader: "Jane Smith",
     category: "Accessories",
     condition: "Like New",
-    submittedDate: "2024-01-15",
+    submittedDate: "2025-01-15",
     image: "/placeholder.svg?height=100&width=100",
     flagged: false,
   },

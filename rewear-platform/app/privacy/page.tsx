@@ -41,7 +41,7 @@ export default function PrivacyPage() {
             <Shield className="h-8 w-8 text-green-600" />
             <h1 className="text-4xl font-bold text-gray-900">Privacy Policy</h1>
           </div>
-          <p className="text-gray-600 text-lg">Last updated: January 1, 2024</p>
+          <p className="text-gray-600 text-lg">Last updated: July 1, 2025</p>
           <p className="text-gray-600 mt-2">
             Your privacy is important to us. This policy explains how we collect, use, and protect your information.
           </p>
@@ -355,7 +355,7 @@ export default function PrivacyPage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 ReWear. All rights reserved.</p>
+            <p>&copy; 2025 ReWear. All rights reserved.</p>
           </div>
         </div>
       </footer>

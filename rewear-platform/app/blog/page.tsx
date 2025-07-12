@@ -11,7 +11,7 @@ const blogPosts = [
     title: "The True Cost of Fast Fashion: Why Sustainable Swapping Matters",
     excerpt:
       "Explore the environmental and social impact of fast fashion and how community-driven clothing exchanges are making a difference.",
-    author: "Sarvesh Murlidhar",
+    author: "Sarvesh Mudaliar",
     date: "January 15, 2024",
     readTime: "5 min read",
     category: "Sustainability",
@@ -24,7 +24,7 @@ const blogPosts = [
     excerpt:
       "How three friends turned a simple idea into a platform that's connecting thousands of people through sustainable fashion.",
     author: "Het Shah",
-    date: "January 10, 2024",
+    date: "January 10, 2025",
     readTime: "4 min read",
     category: "Community",
     image: "/placeholder.svg?height=300&width=500",
@@ -46,7 +46,7 @@ const blogPosts = [
     title: "The Psychology of Sustainable Fashion Choices",
     excerpt: "Understanding the mindset shift needed to embrace circular fashion and reduce consumption habits.",
     author: "Guest Writer",
-    date: "January 5, 2024",
+    date: "February 5, 2024",
     readTime: "6 min read",
     category: "Psychology",
     image: "/placeholder.svg?height=300&width=500",
