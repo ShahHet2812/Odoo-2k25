@@ -34,21 +34,33 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
       setLoading(true)
       setError("")
       try {
+        console.log('Fetching item with ID:', params.id)
         const response = await apiClient.getItem(params.id)
+        console.log('API Response:', response)
+        
         if (response.success && response.data?.item) {
+          console.log('Setting item:', response.data.item)
           setItem(response.data.item)
+        } else if (response.success && response.data) {
+          // Handle case where item is directly in data
+          console.log('Setting item from data:', response.data)
+          setItem(response.data)
         } else {
+          console.log('API response not successful, trying demo storage')
           // Fallback to demo storage
           const demoItems = demoStorage.getItems()
           const demoItem = demoItems.find((it) => it._id === params.id)
           if (demoItem) {
+            console.log('Found item in demo storage:', demoItem)
             setItem(demoItem)
           } else {
-            setError("Item not found.")
+            console.log('Item not found in demo storage either')
+            setError(`Item not found. ID: ${params.id}`)
           }
         }
       } catch (err) {
-        setError("Failed to load item.")
+        console.error('Error fetching item:', err)
+        setError(`Failed to load item: ${err}`)
       } finally {
         setLoading(false)
       }
