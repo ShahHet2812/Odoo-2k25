@@ -145,16 +145,16 @@ class ApiClient {
     return this.request(`/items/${id}`)
   }
 
-  async createItem(itemData: FormData) {
+  async createItem(itemData: any) {
     const token = this.getAuthToken()
     
     return this.request('/items', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
-        // Don't set Content-Type for FormData
+        'Content-Type': 'application/json',
       },
-      body: itemData,
+      body: JSON.stringify(itemData),
     })
   }
 

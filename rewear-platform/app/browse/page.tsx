@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/lib/auth"
 import { apiClient } from "@/lib/api"
 import { Navigation } from "@/components/navigation"
+import { demoStorage } from "@/lib/demo-storage"
 import {
   Package,
   Search,
@@ -27,7 +28,7 @@ import {
 
 export default function BrowsePage() {
   const { user } = useAuth()
-  const [items, setItems] = useState([])
+  const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
@@ -53,9 +54,44 @@ export default function BrowsePage() {
       if (response.success && response.data) {
         const data = response.data as any
         setItems(data.items || [])
+      } else {
+        // Fallback to demo storage
+        let demoItems = demoStorage.getItems()
+        
+        // Apply filters
+        if (searchTerm) {
+          demoItems = demoStorage.searchItems(searchTerm)
+        }
+        
+        if (selectedCategory !== "all") {
+          demoItems = demoItems.filter(item => item.category.toLowerCase() === selectedCategory.toLowerCase())
+        }
+        
+        if (selectedSize !== "all") {
+          demoItems = demoItems.filter(item => item.size === selectedSize)
+        }
+        
+        setItems(demoItems)
       }
     } catch (error) {
       console.error('Error loading items:', error)
+      // Fallback to demo storage
+      let demoItems = demoStorage.getItems()
+      
+      // Apply filters
+      if (searchTerm) {
+        demoItems = demoStorage.searchItems(searchTerm)
+      }
+      
+      if (selectedCategory !== "all") {
+        demoItems = demoItems.filter(item => item.category.toLowerCase() === selectedCategory.toLowerCase())
+      }
+      
+      if (selectedSize !== "all") {
+        demoItems = demoItems.filter(item => item.size === selectedSize)
+      }
+      
+      setItems(demoItems)
     } finally {
       setLoading(false)
     }

@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress"
 import { useAuth } from "@/lib/auth"
 import { apiClient } from "@/lib/api"
 import { Navigation } from "@/components/navigation"
+import { demoStorage } from "@/lib/demo-storage"
 import {
   Package,
   ArrowUpDown,
@@ -38,7 +39,7 @@ export default function DashboardPage() {
     pendingSwaps: 0,
     averageRating: 0,
   })
-  const [recentItems, setRecentItems] = useState([])
+  const [recentItems, setRecentItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -72,6 +73,10 @@ export default function DashboardPage() {
       if (itemsResponse.success && itemsResponse.data) {
         const data = itemsResponse.data as any
         setRecentItems(data.items || [])
+      } else {
+        // Fallback to demo storage
+        const demoItems = demoStorage.getUserItems(user.id)
+        setRecentItems(demoItems.slice(0, 5))
       }
     } catch (error) {
       console.error('Error loading dashboard data:', error)
