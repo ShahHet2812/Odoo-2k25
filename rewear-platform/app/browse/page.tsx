@@ -248,14 +248,14 @@ export default function BrowsePage() {
         ) : items.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {items.map((item: any) => (
-              <Card key={item._id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              <Card key={item._id} className="overflow-hidden hover:shadow-xl hover:scale-105 hover:border-green-500 transition-all duration-300 cursor-pointer group">
                 <div className="aspect-square relative bg-gray-100">
                   {item.images?.[0] ? (
                     <Image
                       src={item.images[0]}
                       alt={item.title}
                       fill
-                      className="object-cover"
+                      className="object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -269,7 +269,7 @@ export default function BrowsePage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white"
+                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                       onClick={() => handleLike(item._id)}
                     >
                       <Heart className="h-4 w-4" />
@@ -278,7 +278,7 @@ export default function BrowsePage() {
                 </div>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-lg truncate flex-1">{item.title}</h3>
+                    <h3 className="font-semibold text-lg truncate flex-1 group-hover:text-green-700 transition-colors duration-300">{item.title}</h3>
                   </div>
                   <p className="text-sm text-gray-600 mb-3">{item.category}</p>
                   
@@ -320,12 +320,12 @@ export default function BrowsePage() {
 
                   <div className="flex items-center gap-2">
                     <Link href={`/item/${item._id}`} className="flex-1">
-                      <Button className="w-full" size="sm">
+                      <Button className="w-full group-hover:bg-green-600 transition-colors duration-300" size="sm">
                         <Eye className="h-4 w-4 mr-2" />
                         View Details
                       </Button>
                     </Link>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="group-hover:border-green-500 group-hover:text-green-600 transition-colors duration-300">
                       <ArrowUpDown className="h-4 w-4" />
                     </Button>
                   </div>

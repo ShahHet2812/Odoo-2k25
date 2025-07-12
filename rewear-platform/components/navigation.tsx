@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from "@/lib/auth"
@@ -12,11 +13,51 @@ import {
   Menu,
   X,
 } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 export function Navigation() {
   const { user, logout } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const pathname = usePathname()
+  const [activePillPosition, setActivePillPosition] = useState(0)
+  const [activePillWidth, setActivePillWidth] = useState(0)
+
+  // Navigation items with their paths
+  const navItems = [
+    { href: "/browse", label: "Browse" },
+    ...(user ? [
+      { href: "/add-item", label: "Add Item" },
+      { href: "/dashboard", label: "Dashboard" }
+    ] : [
+      { href: "/how-it-works", label: "How It Works" },
+      { href: "/about", label: "About" }
+    ])
+  ]
+
+  // Update pill position when route changes
+  useEffect(() => {
+    const updatePillPosition = () => {
+      const navContainer = document.querySelector('.nav-container')
+      if (!navContainer) return
+
+      const activeItem = navContainer.querySelector(`[href="${pathname}"]`)
+      if (activeItem) {
+        const containerRect = navContainer.getBoundingClientRect()
+        const itemRect = activeItem.getBoundingClientRect()
+        
+        setActivePillPosition(itemRect.left - containerRect.left)
+        setActivePillWidth(itemRect.width)
+      } else {
+        // Hide pill if no active item
+        setActivePillPosition(-100)
+        setActivePillWidth(0)
+      }
+    }
+
+    // Small delay to ensure DOM is updated
+    setTimeout(updatePillPosition, 100)
+    updatePillPosition()
+  }, [pathname])
 
   const handleLogout = () => {
     logout()
@@ -36,39 +77,29 @@ export function Navigation() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-4">
-            <Link href="/browse">
-              <Button variant="ghost" className="text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
-                Browse
-              </Button>
-            </Link>
-            {user ? (
-              <>
-                <Link href="/add-item">
-                  <Button className="bg-green-600 hover:bg-green-700 transition-all duration-200">
-                    Add Item
-                  </Button>
-                </Link>
-                <Link href="/dashboard">
-                  <Button variant="ghost" className="text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
-                    Dashboard
-                  </Button>
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link href="/how-it-works">
-                  <Button variant="ghost" className="text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
-                    How It Works
-                  </Button>
-                </Link>
-                <Link href="/about">
-                  <Button variant="ghost" className="text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
-                    About
-                  </Button>
-                </Link>
-              </>
-            )}
+          <nav className="hidden md:flex items-center gap-4 nav-container relative">
+            {/* Animated Pill */}
+            <div 
+              className="absolute bottom-0 h-1 bg-green-600 rounded-full transition-all duration-300 ease-out"
+              style={{
+                left: `${activePillPosition}px`,
+                width: `${activePillWidth}px`,
+                opacity: activePillWidth > 0 ? 1 : 0
+              }}
+            />
+            
+            {navItems.map((item) => (
+              <Link key={item.href} href={item.href}>
+                <Button 
+                  variant="ghost" 
+                  className={`text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 ${
+                    pathname === item.href ? 'text-green-600 bg-green-50' : ''
+                  }`}
+                >
+                  {item.label}
+                </Button>
+              </Link>
+            ))}
           </nav>
 
           {/* User Menu / Auth Buttons */}
@@ -76,7 +107,9 @@ export function Navigation() {
             {user ? (
               <div className="flex items-center gap-3">
                 <Link href="/settings">
-                  <Button variant="ghost" size="sm" className="text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                  <Button variant="ghost" size="sm" className={`text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 ${
+                    pathname === '/settings' ? 'text-green-600 bg-green-50' : ''
+                  }`}>
                     <Settings className="h-4 w-4" />
                   </Button>
                 </Link>
@@ -97,7 +130,9 @@ export function Navigation() {
             ) : (
               <>
                 <Link href="/login">
-                  <Button variant="ghost" className="text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                  <Button variant="ghost" className={`text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 ${
+                    pathname === '/login' ? 'text-green-600 bg-green-50' : ''
+                  }`}>
                     Login
                   </Button>
                 </Link>
@@ -125,25 +160,25 @@ export function Navigation() {
         {mobileMenuOpen && (
           <div className="md:hidden mt-4 pb-4 border-t pt-4 animate-in slide-in-from-top-2 duration-200">
             <nav className="flex flex-col gap-2">
-              <Link href="/browse">
-                <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
-                  Browse
-                </Button>
-              </Link>
+              {navItems.map((item) => (
+                <Link key={item.href} href={item.href}>
+                  <Button 
+                    variant="ghost" 
+                    className={`w-full justify-start text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 ${
+                      pathname === item.href ? 'text-green-600 bg-green-50' : ''
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {item.label}
+                  </Button>
+                </Link>
+              ))}
               {user ? (
                 <>
-                  <Link href="/add-item">
-                    <Button className="w-full justify-start bg-green-600 hover:bg-green-700 transition-all duration-200">
-                      Add Item
-                    </Button>
-                  </Link>
-                  <Link href="/dashboard">
-                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
-                      Dashboard
-                    </Button>
-                  </Link>
                   <Link href="/settings">
-                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                    <Button variant="ghost" className={`w-full justify-start text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 ${
+                      pathname === '/settings' ? 'text-green-600 bg-green-50' : ''
+                    }`}>
                       <Settings className="h-4 w-4 mr-2" />
                       Settings
                     </Button>
@@ -155,18 +190,10 @@ export function Navigation() {
                 </>
               ) : (
                 <>
-                  <Link href="/how-it-works">
-                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
-                      How It Works
-                    </Button>
-                  </Link>
-                  <Link href="/about">
-                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
-                      About
-                    </Button>
-                  </Link>
                   <Link href="/login">
-                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                    <Button variant="ghost" className={`w-full justify-start text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 ${
+                      pathname === '/login' ? 'text-green-600 bg-green-50' : ''
+                    }`}>
                       Login
                     </Button>
                   </Link>
