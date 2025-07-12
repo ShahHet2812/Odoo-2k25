@@ -26,6 +26,23 @@ import {
   ArrowUpDown,
 } from "lucide-react"
 
+// Helper function to format date safely
+const formatDate = (dateString: string) => {
+  try {
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) {
+      return "Unknown date"
+    }
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+  } catch (error) {
+    return "Unknown date"
+  }
+}
+
 export default function BrowsePage() {
   const { user } = useAuth()
   const [items, setItems] = useState<any[]>([])
@@ -78,33 +95,43 @@ export default function BrowsePage() {
         setItems(data.items || [])
       } else {
         console.log('API failed, using demo storage')
-        // Fallback to demo storage
+        // Fallback to demo storage with proper filtering
         let demoItems = demoStorage.getItems()
         
-        // Apply filters to demo items
+        // Apply search filter
         if (searchTerm) {
           demoItems = demoStorage.searchItems(searchTerm)
         }
         
+        // Apply category filter
         if (selectedCategory !== "all") {
           demoItems = demoItems.filter(item => 
             item.category.toLowerCase() === selectedCategory.toLowerCase()
           )
         }
         
+        // Apply size filter
         if (selectedSize !== "all") {
           demoItems = demoItems.filter(item => item.size === selectedSize)
         }
         
         // Apply sorting to demo items
         if (sortBy === "newest") {
-          demoItems.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          demoItems.sort((a, b) => {
+            const dateA = new Date(a.createdAt).getTime()
+            const dateB = new Date(b.createdAt).getTime()
+            return dateB - dateA
+          })
         } else if (sortBy === "oldest") {
-          demoItems.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+          demoItems.sort((a, b) => {
+            const dateA = new Date(a.createdAt).getTime()
+            const dateB = new Date(b.createdAt).getTime()
+            return dateA - dateB
+          })
         } else if (sortBy === "points") {
-          demoItems.sort((a, b) => b.points - a.points)
+          demoItems.sort((a, b) => (b.points || 0) - (a.points || 0))
         } else if (sortBy === "points-asc") {
-          demoItems.sort((a, b) => a.points - b.points)
+          demoItems.sort((a, b) => (a.points || 0) - (b.points || 0))
         }
         
         console.log('Demo items after filtering:', demoItems.length)
@@ -112,33 +139,43 @@ export default function BrowsePage() {
       }
     } catch (error) {
       console.error('Error loading items:', error)
-      // Fallback to demo storage
+      // Fallback to demo storage with proper filtering
       let demoItems = demoStorage.getItems()
       
-      // Apply filters
+      // Apply search filter
       if (searchTerm) {
         demoItems = demoStorage.searchItems(searchTerm)
       }
       
+      // Apply category filter
       if (selectedCategory !== "all") {
         demoItems = demoItems.filter(item => 
           item.category.toLowerCase() === selectedCategory.toLowerCase()
         )
       }
       
+      // Apply size filter
       if (selectedSize !== "all") {
         demoItems = demoItems.filter(item => item.size === selectedSize)
       }
       
       // Apply sorting
       if (sortBy === "newest") {
-        demoItems.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        demoItems.sort((a, b) => {
+          const dateA = new Date(a.createdAt).getTime()
+          const dateB = new Date(b.createdAt).getTime()
+          return dateB - dateA
+        })
       } else if (sortBy === "oldest") {
-        demoItems.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+        demoItems.sort((a, b) => {
+          const dateA = new Date(a.createdAt).getTime()
+          const dateB = new Date(b.createdAt).getTime()
+          return dateA - dateB
+        })
       } else if (sortBy === "points") {
-        demoItems.sort((a, b) => b.points - a.points)
+        demoItems.sort((a, b) => (b.points || 0) - (a.points || 0))
       } else if (sortBy === "points-asc") {
-        demoItems.sort((a, b) => a.points - b.points)
+        demoItems.sort((a, b) => (a.points || 0) - (b.points || 0))
       }
       
       setItems(demoItems)
@@ -313,7 +350,7 @@ export default function BrowsePage() {
                     </div>
                   )}
                   <div className="absolute top-2 left-2">
-                    <Badge variant="secondary">{item.points} pts</Badge>
+                    <Badge variant="secondary">{item.points || 0} pts</Badge>
                   </div>
                   <div className="absolute top-2 right-2">
                     <Button
@@ -344,7 +381,7 @@ export default function BrowsePage() {
                     </div>
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(item.createdAt).toLocaleDateString()}
+                      {formatDate(item.createdAt)}
                     </div>
                   </div>
 
@@ -357,7 +394,7 @@ export default function BrowsePage() {
                       </AvatarFallback>
                     </Avatar>
                     <Link 
-                      href={`/profile/${item.user?._id}`}
+                      href={`/profile/${item.user?._id || item.userId}`}
                       className="text-sm font-medium text-gray-700 hover:text-gray-900 truncate"
                     >
                       {item.user?.firstName} {item.user?.lastName}
@@ -387,10 +424,10 @@ export default function BrowsePage() {
           <Card>
             <CardContent className="p-8 text-center">
               <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                             <h3 className="text-lg font-semibold text-green-800 mb-2">No items found</h3>
-               <p className="text-green-600 mb-4">
-                 Try adjusting your search criteria or browse all items.
-               </p>
+              <h3 className="text-lg font-semibold text-green-800 mb-2">No items found</h3>
+              <p className="text-green-600 mb-4">
+                Try adjusting your search criteria or browse all items.
+              </p>
               <div className="flex gap-2 justify-center">
                 <Button variant="outline" onClick={() => {
                   setSearchTerm("")

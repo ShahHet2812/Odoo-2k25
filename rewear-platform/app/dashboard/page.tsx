@@ -29,6 +29,23 @@ import {
   Coins,
 } from "lucide-react"
 
+// Helper function to format date safely
+const formatDate = (dateString: string) => {
+  try {
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) {
+      return "Unknown date"
+    }
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+  } catch (error) {
+    return "Unknown date"
+  }
+}
+
 export default function DashboardPage() {
   const { user, isAuthenticated } = useAuth()
   const [items, setItems] = useState<any[]>([])
@@ -71,8 +88,8 @@ export default function DashboardPage() {
         setStats(prev => ({
           ...prev,
           totalItems: demoItems.length,
-          totalViews: demoItems.reduce((sum, item) => sum + (item.views || 0), 0),
-          totalLikes: demoItems.reduce((sum, item) => sum + (item.likes || 0), 0),
+          totalViews: demoItems.reduce((sum, item) => sum + ((item as any).views || 0), 0),
+          totalLikes: demoItems.reduce((sum, item) => sum + ((item as any).likes || 0), 0),
           points: user?.points || 0
         }))
       }
@@ -84,8 +101,8 @@ export default function DashboardPage() {
       setStats(prev => ({
         ...prev,
         totalItems: demoItems.length,
-        totalViews: demoItems.reduce((sum, item) => sum + (item.views || 0), 0),
-        totalLikes: demoItems.reduce((sum, item) => sum + (item.likes || 0), 0),
+        totalViews: demoItems.reduce((sum, item) => sum + ((item as any).views || 0), 0),
+        totalLikes: demoItems.reduce((sum, item) => sum + ((item as any).likes || 0), 0),
         points: user?.points || 0
       }))
     } finally {
@@ -201,7 +218,7 @@ export default function DashboardPage() {
                       )}
                                               <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          Member since {user?.joinDate ? new Date(user.joinDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Recently'}
+                          Member since {user?.joinDate ? formatDate(user.joinDate) : 'Recently'}
                         </div>
                     </div>
                   </div>

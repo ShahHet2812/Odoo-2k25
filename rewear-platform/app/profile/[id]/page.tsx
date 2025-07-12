@@ -25,6 +25,23 @@ import {
   MessageSquare,
 } from "lucide-react"
 
+// Helper function to format date safely
+const formatDate = (dateString: string) => {
+  try {
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) {
+      return "Unknown date"
+    }
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+  } catch (error) {
+    return "Unknown date"
+  }
+}
+
 export default function UserProfilePage({ params }: { params: { id: string } }) {
   const { user: currentUser } = useAuth()
   const [profileUser, setProfileUser] = useState<any>(null)
@@ -47,35 +64,83 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
         if (profileResponse.success && profileResponse.data) {
           setProfileUser(profileResponse.data)
         } else {
-          // Fallback to demo data
+          // Fallback to demo data - try to find user in demo items
           const demoItems = demoStorage.getItems()
-          const demoUser = {
-            _id: params.id,
-            firstName: "Demo",
-            lastName: "User",
-            avatar: "/placeholder-user.jpg",
-            location: "Demo City",
-            joinDate: "2024",
-            rating: 4.8,
-            totalSwaps: 15,
-            points: 250,
-            itemsListed: demoItems.filter(item => item.userId === params.id).length
+          const userItems = demoItems.filter(item => item.userId === params.id)
+          
+          if (userItems.length > 0) {
+            // Create user profile from item data
+            const firstItem = userItems[0]
+            const demoUser = {
+              _id: params.id,
+              firstName: firstItem.user?.firstName || "Demo",
+              lastName: firstItem.user?.lastName || "User",
+              avatar: firstItem.user?.avatar || "/placeholder-user.jpg",
+              location: firstItem.location || "Demo City",
+              joinDate: formatDate(firstItem.createdAt),
+              rating: 4.8,
+              totalSwaps: 15,
+              points: userItems.reduce((sum, item) => sum + (item.points || 0), 0),
+              itemsListed: userItems.length
+            }
+            setProfileUser(demoUser)
+            setUserItems(userItems)
+          } else {
+            // Create a generic demo user if no items found
+            const demoUser = {
+              _id: params.id,
+              firstName: "Demo",
+              lastName: "User",
+              avatar: "/placeholder-user.jpg",
+              location: "Demo City",
+              joinDate: "2024",
+              rating: 4.8,
+              totalSwaps: 15,
+              points: 250,
+              itemsListed: 0
+            }
+            setProfileUser(demoUser)
+            setUserItems([])
           }
-          setProfileUser(demoUser)
         }
         
         if (itemsResponse.success && itemsResponse.data) {
-          setUserItems(itemsResponse.data.items || [])
-        } else {
-          // Fallback to demo items
-          const demoItems = demoStorage.getItems()
-          const userDemoItems = demoItems.filter(item => item.userId === params.id)
-          setUserItems(userDemoItems)
+          const data = itemsResponse.data as any
+          setUserItems(data.items || [])
+        } else if (!profileResponse.success) {
+          // Use demo items if API failed and we haven't set them yet
+          if (userItems.length === 0) {
+            const demoItems = demoStorage.getItems()
+            const userDemoItems = demoItems.filter(item => item.userId === params.id)
+            setUserItems(userDemoItems)
+          }
         }
         
       } catch (err) {
         console.error('Error fetching user profile:', err)
-        setError("Failed to load user profile.")
+        // Fallback to demo data
+        const demoItems = demoStorage.getItems()
+        const userDemoItems = demoItems.filter(item => item.userId === params.id)
+        
+        if (userDemoItems.length > 0) {
+          const firstItem = userDemoItems[0]
+          const demoUser = {
+            _id: params.id,
+            firstName: firstItem.user?.firstName || "Demo",
+            lastName: firstItem.user?.lastName || "User",
+            avatar: firstItem.user?.avatar || "/placeholder-user.jpg",
+            location: firstItem.location || "Demo City",
+            joinDate: formatDate(firstItem.createdAt),
+            rating: 4.8,
+            totalSwaps: 15,
+            points: userDemoItems.reduce((sum, item) => sum + (item.points || 0), 0),
+            itemsListed: userDemoItems.length
+          }
+          setProfileUser(demoUser)
+          setUserItems(userDemoItems)
+        } else {
+          setError("User not found.")
+        }
       } finally {
         setLoading(false)
       }
@@ -104,13 +169,18 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <div className="text-red-600 text-xl font-semibold">{error || "User not found."}</div>
+            <Link href="/browse">
+              <Button className="mt-4">
+                Back to Browse
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
     )
   }
 
-  const isOwnProfile = currentUser && currentUser.id === params.id
+  const isOwnProfile = currentUser && (currentUser.id === params.id || (currentUser as any)._id === params.id)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -207,7 +277,7 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
                         </div>
                       )}
                       <div className="absolute top-2 left-2">
-                        <Badge variant="secondary">{item.points} pts</Badge>
+                        <Badge variant="secondary">{item.points || 0} pts</Badge>
                       </div>
                     </div>
                     <CardContent className="p-4">
@@ -226,7 +296,7 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
                       <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          {new Date(item.createdAt).toLocaleDateString()}
+                          {formatDate(item.createdAt)}
                         </div>
                       </div>
 
@@ -249,9 +319,12 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
               <Card>
                 <CardContent className="p-8 text-center">
                   <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">No items listed</h3>
-                  <p className="text-gray-600 mb-4">
-                    {isOwnProfile ? "You haven't listed any items yet." : "This user hasn't listed any items yet."}
+                  <h3 className="text-lg font-semibold text-green-800 mb-2">No items listed</h3>
+                  <p className="text-green-600 mb-4">
+                    {isOwnProfile 
+                      ? "You haven't listed any items yet. Start sharing your sustainable fashion items!"
+                      : "This user hasn't listed any items yet."
+                    }
                   </p>
                   {isOwnProfile && (
                     <Link href="/add-item">
@@ -266,98 +339,26 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
             )}
           </TabsContent>
 
-          <TabsContent value="activity" className="space-y-4">
+          <TabsContent value="activity" className="space-y-6">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
-                  Recent Activity
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Listed a new item</p>
-                      <p className="text-xs text-gray-500">2 days ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Completed a swap</p>
-                      <p className="text-xs text-gray-500">1 week ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Received a review</p>
-                      <p className="text-xs text-gray-500">2 weeks ago</p>
-                    </div>
-                  </div>
-                </div>
+              <CardContent className="p-8 text-center">
+                <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-green-800 mb-2">Activity Feed</h3>
+                <p className="text-green-600">
+                  Recent activity will appear here.
+                </p>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="reviews" className="space-y-4">
+          <TabsContent value="reviews" className="space-y-6">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5" />
-                  Reviews
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="border-b pb-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage src="/placeholder-user.jpg" />
-                        <AvatarFallback>JD</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium text-sm">John Doe</p>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      "Great experience swapping with this user! The item was exactly as described and shipping was fast."
-                    </p>
-                    <p className="text-xs text-gray-500 mt-2">1 week ago</p>
-                  </div>
-                  
-                  <div className="border-b pb-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage src="/placeholder-user.jpg" />
-                        <AvatarFallback>JS</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium text-sm">Jane Smith</p>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                          <Star className="h-3 w-3 text-gray-300" />
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      "Very reliable trader. Communication was excellent throughout the swap process."
-                    </p>
-                    <p className="text-xs text-gray-500 mt-2">2 weeks ago</p>
-                  </div>
-                </div>
+              <CardContent className="p-8 text-center">
+                <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-green-800 mb-2">Reviews</h3>
+                <p className="text-green-600">
+                  Reviews from other users will appear here.
+                </p>
               </CardContent>
             </Card>
           </TabsContent>
