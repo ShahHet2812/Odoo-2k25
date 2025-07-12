@@ -1,23 +1,25 @@
-import type { Metadata } from 'next'
-import './globals.css'
-import { AuthProvider } from '@/lib/auth'
-import { ThemeProvider } from '@/components/theme-provider'
-import { Toaster } from '@/components/ui/toaster'
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
+import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/toaster"
+import { AuthProvider } from "@/lib/auth"
+
+const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: 'ReWear - Sustainable Fashion Platform',
-  description: 'Join our community of eco-conscious fashion lovers. Exchange unused clothing, earn points, and help reduce textile waste while refreshing your wardrobe.',
-  generator: 'v0.dev',
+  title: "ReWear - Sustainable Fashion Platform",
+  description: "Swap, share, and discover sustainable fashion items",
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body>
+    <html lang="en">
+      <body className={inter.className}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

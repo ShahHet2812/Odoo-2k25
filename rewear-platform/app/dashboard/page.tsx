@@ -1,254 +1,417 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Package, Star, TrendingUp, Calendar, MapPin, LogOut, Settings } from "lucide-react"
+import { Progress } from "@/components/ui/progress"
 import { useAuth } from "@/lib/auth"
-import { ProtectedRoute } from "@/components/protected-route"
+import { apiClient } from "@/lib/api"
+import {
+  Package,
+  ArrowUpDown,
+  TrendingUp,
+  Star,
+  Settings,
+  Plus,
+  Eye,
+  Heart,
+  MessageSquare,
+  Award,
+  Calendar,
+  MapPin,
+  Edit,
+} from "lucide-react"
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth()
+  const { user, isAuthenticated } = useAuth()
+  const [stats, setStats] = useState({
+    totalItems: 0,
+    activeItems: 0,
+    totalViews: 0,
+    totalLikes: 0,
+    completedSwaps: 0,
+    pendingSwaps: 0,
+    averageRating: 0,
+  })
+  const [recentItems, setRecentItems] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const handleLogout = () => {
-    logout()
+  useEffect(() => {
+    if (user) {
+      loadDashboardData()
+    }
+  }, [user])
+
+  const loadDashboardData = async () => {
+    if (!user) return
+
+    setLoading(true)
+    try {
+      // Load user stats
+      const statsResponse = await apiClient.getUserStats(user.id)
+      if (statsResponse.success && statsResponse.data) {
+        const data = statsResponse.data as any
+        setStats(data.stats || {
+          totalItems: 0,
+          activeItems: 0,
+          totalViews: 0,
+          totalLikes: 0,
+          completedSwaps: 0,
+          pendingSwaps: 0,
+          averageRating: 0,
+        })
+      }
+
+      // Load recent items
+      const itemsResponse = await apiClient.getUserItems(user.id, { page: 1, limit: 5 })
+      if (itemsResponse.success && itemsResponse.data) {
+        const data = itemsResponse.data as any
+        setRecentItems(data.items || [])
+      }
+    } catch (error) {
+      console.error('Error loading dashboard data:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-white border-b">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <Package className="h-6 w-6 text-green-600" />
-              <span className="text-xl font-bold">ReWear</span>
-            </Link>
-            <nav className="flex items-center gap-4">
-              <Link href="/browse">
-                <Button variant="ghost">Browse</Button>
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6">
+            <div className="text-center">
+              <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold mb-2">Access Required</h2>
+              <p className="text-gray-600 mb-4">Please log in to access your dashboard.</p>
+              <Link href="/login">
+                <Button>Go to Login</Button>
               </Link>
-              <Link href="/add-item">
-                <Button>Add Item</Button>
-              </Link>
-              <div className="flex items-center gap-2">
-                <Avatar>
-                  <AvatarImage src="/placeholder-user.jpg" />
-                  <AvatarFallback>{user?.firstName[0]}{user?.lastName[0]}</AvatarFallback>
-                </Avatar>
-                <div className="hidden md:block">
-                  <p className="text-sm font-medium">{user?.firstName} {user?.lastName}</p>
-                  <p className="text-xs text-gray-500">{user?.email}</p>
-                </div>
-                <Button variant="ghost" size="sm" onClick={handleLogout}>
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </div>
-            </nav>
-          </div>
-        </header>
-
-        <div className="container mx-auto px-4 py-8">
-          <div className="grid lg:grid-cols-4 gap-8">
-            {/* Profile Sidebar */}
-            <div className="lg:col-span-1">
-              <Card>
-                <CardHeader className="text-center">
-                  <Avatar className="w-20 h-20 mx-auto mb-4">
-                    <AvatarImage src="/placeholder-user.jpg" />
-                    <AvatarFallback className="text-2xl">{user?.firstName[0]}{user?.lastName[0]}</AvatarFallback>
-                  </Avatar>
-                  <CardTitle>{user?.firstName} {user?.lastName}</CardTitle>
-                  <CardDescription>{user?.email}</CardDescription>
-                  <Badge className="bg-yellow-100 text-yellow-800 mt-2">{user?.level}</Badge>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-green-600">{user?.points}</div>
-                    <div className="text-sm text-gray-600">Points Available</div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Total Swaps</span>
-                      <span className="font-semibold">{user?.totalSwaps}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Items Listed</span>
-                      <span className="font-semibold">{user?.itemsListed}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Rating</span>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-semibold">{user?.rating}</span>
-                      </div>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Member Since</span>
-                      <span className="font-semibold">{user?.joinDate}</span>
-                    </div>
-                  </div>
-
-                  <div className="pt-4 border-t">
-                    <Link href="/settings">
-                      <Button variant="outline" className="w-full">
-                        <Settings className="h-4 w-4 mr-2" />
-                        Settings
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
-            {/* Main Content */}
-            <div className="lg:col-span-3">
-              <Tabs defaultValue="overview" className="space-y-6">
-                <TabsList>
-                  <TabsTrigger value="overview">Overview</TabsTrigger>
-                  <TabsTrigger value="activity">Activity</TabsTrigger>
-                  <TabsTrigger value="items">My Items</TabsTrigger>
-                  <TabsTrigger value="swaps">Swaps</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="overview" className="space-y-6">
-                  {/* Stats Cards */}
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Points Earned</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-green-600" />
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold text-green-600">{(user?.points || 0) + 50}</div>
-                        <p className="text-xs text-muted-foreground">+15 from this month</p>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Successful Swaps</CardTitle>
-                        <Package className="h-4 w-4 text-blue-600" />
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">{user?.totalSwaps}</div>
-                        <p className="text-xs text-muted-foreground">+3 from this month</p>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Items Listed</CardTitle>
-                        <Calendar className="h-4 w-4 text-purple-600" />
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">{user?.itemsListed}</div>
-                        <p className="text-xs text-muted-foreground">+2 from this month</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Recent Activity */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Recent Activity</CardTitle>
-                      <CardDescription>Your latest swaps and interactions</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                            <Package className="h-5 w-5 text-green-600" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-medium">Item listed: Vintage Denim Jacket</p>
-                            <p className="text-sm text-gray-500">2 days ago</p>
-                          </div>
-                          <Badge variant="secondary">Listed</Badge>
-                        </div>
-                        <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                            <Star className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-medium">Swap completed: Summer Dress</p>
-                            <p className="text-sm text-gray-500">1 week ago</p>
-                          </div>
-                          <Badge variant="secondary">Completed</Badge>
-                        </div>
-                        <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                          <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                            <TrendingUp className="h-5 w-5 text-yellow-600" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-medium">Points earned: +10</p>
-                            <p className="text-sm text-gray-500">2 weeks ago</p>
-                          </div>
-                          <Badge variant="secondary">Points</Badge>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="activity" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Activity Timeline</CardTitle>
-                      <CardDescription>Your complete activity history</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-center py-12 text-gray-500">
-                        <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <p>Activity timeline coming soon</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="items" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>My Listed Items</CardTitle>
-                      <CardDescription>Manage your listed clothing items</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-center py-12 text-gray-500">
-                        <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <p>No items listed yet</p>
-                        <Link href="/add-item">
-                          <Button className="mt-4">List Your First Item</Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="swaps" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Swap History</CardTitle>
-                      <CardDescription>Track all your completed and pending swaps</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-center py-12 text-gray-500">
-                        <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <p>No swaps yet</p>
-                        <Link href="/browse">
-                          <Button className="mt-4">Start Browsing</Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-32 bg-gray-200 rounded"></div>
+                ))}
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="h-96 bg-gray-200 rounded"></div>
+                <div className="h-96 bg-gray-200 rounded"></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </ProtectedRoute>
+    )
+  }
+
+  const getLevelProgress = () => {
+    if (!user) return 0
+    
+    const levels: Record<string, { min: number; max: number }> = {
+      'Bronze Swapper': { min: 0, max: 50 },
+      'Silver Swapper': { min: 50, max: 200 },
+      'Gold Swapper': { min: 200, max: 500 },
+      'Platinum Swapper': { min: 500, max: 1000 },
+      'Diamond Swapper': { min: 1000, max: Infinity },
+    }
+    
+    const currentLevel = levels[user.level || 'Bronze Swapper'] || levels['Bronze Swapper']
+    const progress = Math.min(100, ((user.points - currentLevel.min) / (currentLevel.max - currentLevel.min)) * 100)
+    
+    return progress
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white border-b">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Package className="h-6 w-6 text-green-600" />
+              <span className="text-xl font-bold">ReWear</span>
+            </div>
+            <Badge variant="outline" className="ml-4">
+              {user?.level || 'Bronze Swapper'}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link href="/add-item">
+              <Button size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Item
+              </Button>
+            </Link>
+            <Link href="/settings">
+              <Button variant="ghost" size="sm">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={user?.avatar} />
+              <AvatarFallback>
+                {user?.firstName?.[0]}{user?.lastName?.[0]}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Welcome Section */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  Welcome back, {user?.firstName || 'User'}!
+                </h1>
+                <p className="text-gray-600">
+                  Here's what's happening with your sustainable fashion journey.
+                </p>
+              </div>
+              <Link href="/settings">
+                <Button variant="outline" size="sm">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Profile
+                </Button>
+              </Link>
+            </div>
+
+            {/* User Info Card */}
+            <Card className="mb-8">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={user?.avatar} />
+                    <AvatarFallback className="text-lg">
+                      {user?.firstName?.[0]}{user?.lastName?.[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <h2 className="text-xl font-semibold mb-1">
+                      {user?.firstName} {user?.lastName}
+                    </h2>
+                    <p className="text-gray-600 mb-2">{user?.email}</p>
+                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                      {user?.location && (
+                        <div className="flex items-center gap-1">
+                          <MapPin className="h-4 w-4" />
+                          {user.location}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-4 w-4" />
+                        Member since {user?.joinDate || 'Recently'}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-green-600 mb-1">
+                      {user?.points || 0} pts
+                    </div>
+                    <Badge variant="secondary">{user?.level || 'Bronze Swapper'}</Badge>
+                  </div>
+                </div>
+
+                {/* Level Progress */}
+                <div className="mt-4">
+                  <div className="flex items-center justify-between text-sm mb-2">
+                    <span>Level Progress</span>
+                    <span>{Math.round(getLevelProgress())}%</span>
+                  </div>
+                  <Progress value={getLevelProgress()} className="h-2" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Active Items</p>
+                    <p className="text-2xl font-bold">{stats.activeItems}</p>
+                  </div>
+                  <Package className="h-8 w-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Views</p>
+                    <p className="text-2xl font-bold">{stats.totalViews}</p>
+                  </div>
+                  <Eye className="h-8 w-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Likes</p>
+                    <p className="text-2xl font-bold">{stats.totalLikes}</p>
+                  </div>
+                  <Heart className="h-8 w-8 text-red-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Completed Swaps</p>
+                    <p className="text-2xl font-bold">{stats.completedSwaps}</p>
+                  </div>
+                  <ArrowUpDown className="h-8 w-8 text-purple-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Recent Activity */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Recent Activity
+                </CardTitle>
+                <CardDescription>
+                  Your latest items and interactions
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {recentItems.length > 0 ? (
+                  <div className="space-y-4">
+                    {recentItems.map((item: any) => (
+                      <div key={item._id} className="flex items-center gap-3 p-3 border rounded-lg">
+                        <div className="w-12 h-12 bg-gray-200 rounded-lg flex-shrink-0">
+                          {item.images?.[0] && (
+                            <Image
+                              src={item.images[0]}
+                              alt={item.title}
+                              width={48}
+                              height={48}
+                              className="rounded-lg object-cover w-full h-full"
+                            />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm truncate">{item.title}</h4>
+                          <p className="text-xs text-gray-500">{item.category}</p>
+                        </div>
+                        <div className="text-right">
+                          <Badge variant="outline">{item.points} pts</Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No items yet</h3>
+                    <p className="text-gray-600 mb-4">Start by adding your first item to the platform.</p>
+                    <Link href="/add-item">
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Your First Item
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Award className="h-5 w-5" />
+                  Quick Actions
+                </CardTitle>
+                <CardDescription>
+                  Common tasks and shortcuts
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <Link href="/add-item">
+                    <Button className="w-full justify-start" variant="outline">
+                      <Plus className="h-4 w-4 mr-3" />
+                      Add New Item
+                    </Button>
+                  </Link>
+                  
+                  <Link href="/browse">
+                    <Button className="w-full justify-start" variant="outline">
+                      <Eye className="h-4 w-4 mr-3" />
+                      Browse Items
+                    </Button>
+                  </Link>
+                  
+                  <Link href="/settings">
+                    <Button className="w-full justify-start" variant="outline">
+                      <Settings className="h-4 w-4 mr-3" />
+                      Account Settings
+                    </Button>
+                  </Link>
+                  
+                  <Button className="w-full justify-start" variant="outline" disabled>
+                    <MessageSquare className="h-4 w-4 mr-3" />
+                    View Messages
+                  </Button>
+                </div>
+
+                {/* Stats Summary */}
+                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-medium mb-3">Your Impact</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Items Listed:</span>
+                      <span className="font-medium">{stats.totalItems}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Total Swaps:</span>
+                      <span className="font-medium">{stats.completedSwaps}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Average Rating:</span>
+                      <span className="font-medium">{stats.averageRating.toFixed(1)} ⭐</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

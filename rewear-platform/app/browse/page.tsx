@@ -1,107 +1,111 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Package, Grid3X3, List, SlidersHorizontal } from "lucide-react"
-
-const allItems = [
-  {
-    id: 1,
-    title: "Vintage Denim Jacket",
-    category: "Outerwear",
-    size: "M",
-    condition: "Excellent",
-    points: 25,
-    image: "/placeholder.svg?height=300&width=300",
-    uploader: "Sarah M.",
-    location: "Portland, OR",
-  },
-  {
-    id: 2,
-    title: "Designer Silk Blouse",
-    category: "Tops",
-    size: "S",
-    condition: "Like New",
-    points: 35,
-    image: "/placeholder.svg?height=300&width=300",
-    uploader: "Emma K.",
-    location: "Seattle, WA",
-  },
-  {
-    id: 3,
-    title: "Casual Summer Dress",
-    category: "Dresses",
-    size: "L",
-    condition: "Good",
-    points: 20,
-    image: "/placeholder.svg?height=300&width=300",
-    uploader: "Lisa R.",
-    location: "San Francisco, CA",
-  },
-  {
-    id: 4,
-    title: "Wool Winter Coat",
-    category: "Outerwear",
-    size: "M",
-    condition: "Very Good",
-    points: 45,
-    image: "/placeholder.svg?height=300&width=300",
-    uploader: "Anna T.",
-    location: "Denver, CO",
-  },
-  {
-    id: 5,
-    title: "Athletic Sneakers",
-    category: "Shoes",
-    size: "9",
-    condition: "Excellent",
-    points: 30,
-    image: "/placeholder.svg?height=300&width=300",
-    uploader: "Mike J.",
-    location: "Austin, TX",
-  },
-  {
-    id: 6,
-    title: "Leather Handbag",
-    category: "Accessories",
-    size: "One Size",
-    condition: "Like New",
-    points: 40,
-    image: "/placeholder.svg?height=300&width=300",
-    uploader: "Rachel S.",
-    location: "New York, NY",
-  },
-]
-
-const categories = ["All", "Tops", "Bottoms", "Dresses", "Outerwear", "Shoes", "Accessories"]
-const sizes = ["All", "XS", "S", "M", "L", "XL", "XXL", "One Size"]
-const conditions = ["All", "Like New", "Excellent", "Very Good", "Good", "Fair"]
+import { useAuth } from "@/lib/auth"
+import { apiClient } from "@/lib/api"
+import {
+  Package,
+  Search,
+  Filter,
+  Heart,
+  Eye,
+  MapPin,
+  Calendar,
+  Star,
+  User,
+  ArrowUpDown,
+} from "lucide-react"
 
 export default function BrowsePage() {
+  const { user } = useAuth()
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("All")
-  const [selectedSize, setSelectedSize] = useState("All")
-  const [selectedCondition, setSelectedCondition] = useState("All")
+  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [selectedSize, setSelectedSize] = useState("all")
   const [sortBy, setSortBy] = useState("newest")
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [showFilters, setShowFilters] = useState(false)
 
-  const filteredItems = allItems.filter((item) => {
-    const matchesSearch =
-      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === "All" || item.category === selectedCategory
-    const matchesSize = selectedSize === "All" || item.size === selectedSize
-    const matchesCondition = selectedCondition === "All" || item.condition === selectedCondition
+  useEffect(() => {
+    loadItems()
+  }, [])
 
-    return matchesSearch && matchesCategory && matchesSize && matchesCondition
-  })
+  const loadItems = async () => {
+    setLoading(true)
+    try {
+      const response = await apiClient.getItems({
+        page: 1,
+        limit: 50,
+        search: searchTerm,
+        category: selectedCategory !== "all" ? selectedCategory : undefined,
+        size: selectedSize !== "all" ? selectedSize : undefined,
+        sort: sortBy,
+      })
+
+      if (response.success && response.data) {
+        const data = response.data as any
+        setItems(data.items || [])
+      }
+    } catch (error) {
+      console.error('Error loading items:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSearch = () => {
+    loadItems()
+  }
+
+  const handleFilterChange = () => {
+    loadItems()
+  }
+
+  const handleLike = async (itemId: string) => {
+    if (!user) return
+
+    try {
+      await apiClient.likeItem(itemId)
+      // Refresh items to update like status
+      loadItems()
+    } catch (error) {
+      console.error('Error liking item:', error)
+    }
+  }
+
+  const categories = [
+    { value: "all", label: "All Categories" },
+    { value: "tops", label: "Tops" },
+    { value: "bottoms", label: "Bottoms" },
+    { value: "dresses", label: "Dresses" },
+    { value: "outerwear", label: "Outerwear" },
+    { value: "shoes", label: "Shoes" },
+    { value: "accessories", label: "Accessories" },
+  ]
+
+  const sizes = [
+    { value: "all", label: "All Sizes" },
+    { value: "XS", label: "XS" },
+    { value: "S", label: "S" },
+    { value: "M", label: "M" },
+    { value: "L", label: "L" },
+    { value: "XL", label: "XL" },
+    { value: "XXL", label: "XXL" },
+  ]
+
+  const sortOptions = [
+    { value: "newest", label: "Newest First" },
+    { value: "oldest", label: "Oldest First" },
+    { value: "points", label: "Points (High to Low)" },
+    { value: "points-asc", label: "Points (Low to High)" },
+  ]
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -112,178 +116,250 @@ export default function BrowsePage() {
             <Package className="h-6 w-6 text-green-600" />
             <span className="text-xl font-bold">ReWear</span>
           </Link>
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
-              Dashboard
+          <div className="flex items-center gap-4">
+            <Link href="/browse">
+              <Button variant="ghost">Browse</Button>
             </Link>
-            <Link href="/add-item" className="text-gray-600 hover:text-gray-900">
-              List Item
-            </Link>
-          </nav>
-          <div className="flex items-center gap-3">
-            <Link href="/login">
-              <Button variant="ghost">Login</Button>
-            </Link>
-            <Link href="/signup">
-              <Button>Sign Up</Button>
-            </Link>
+            {user ? (
+              <>
+                <Link href="/add-item">
+                  <Button>Add Item</Button>
+                </Link>
+                <Link href="/dashboard">
+                  <Button variant="ghost">Dashboard</Button>
+                </Link>
+                <Link href="/settings">
+                  <Button variant="ghost" size="sm">
+                    <User className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost">Login</Button>
+                </Link>
+                <Link href="/signup">
+                  <Button>Sign Up</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-8">
         {/* Search and Filters */}
-        <div className="mb-8 space-y-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search items..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+        <div className="mb-8">
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search items..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  className="pl-10"
+                />
+              </div>
             </div>
-            <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="md:hidden">
-              <SlidersHorizontal className="h-4 w-4 mr-2" />
-              Filters
+            <Button onClick={handleSearch}>
+              <Search className="h-4 w-4 mr-2" />
+              Search
             </Button>
           </div>
 
-          {/* Filters */}
-          <div className={`grid md:grid-cols-4 gap-4 ${showFilters ? "block" : "hidden md:grid"}`}>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger>
-                <SelectValue placeholder="Category" />
+          <div className="flex flex-col md:flex-row gap-4">
+            <Select value={selectedCategory} onValueChange={(value) => {
+              setSelectedCategory(value)
+              handleFilterChange()
+            }}>
+              <SelectTrigger className="w-full md:w-48">
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
+                  <SelectItem key={category.value} value={category.value}>
+                    {category.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            <Select value={selectedSize} onValueChange={setSelectedSize}>
-              <SelectTrigger>
-                <SelectValue placeholder="Size" />
+            <Select value={selectedSize} onValueChange={(value) => {
+              setSelectedSize(value)
+              handleFilterChange()
+            }}>
+              <SelectTrigger className="w-full md:w-32">
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {sizes.map((size) => (
-                  <SelectItem key={size} value={size}>
-                    {size}
+                  <SelectItem key={size.value} value={size.value}>
+                    {size.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            <Select value={selectedCondition} onValueChange={setSelectedCondition}>
-              <SelectTrigger>
-                <SelectValue placeholder="Condition" />
+            <Select value={sortBy} onValueChange={(value) => {
+              setSortBy(value)
+              handleFilterChange()
+            }}>
+              <SelectTrigger className="w-full md:w-48">
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {conditions.map((condition) => (
-                  <SelectItem key={condition} value={condition}>
-                    {condition}
+                {sortOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Newest First</SelectItem>
-                <SelectItem value="oldest">Oldest First</SelectItem>
-                <SelectItem value="points-low">Points: Low to High</SelectItem>
-                <SelectItem value="points-high">Points: High to Low</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </div>
 
-        {/* Results Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Browse Items</h1>
-            <p className="text-gray-600">{filteredItems.length} items found</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant={viewMode === "grid" ? "default" : "outline"} size="sm" onClick={() => setViewMode("grid")}>
-              <Grid3X3 className="h-4 w-4" />
-            </Button>
-            <Button variant={viewMode === "list" ? "default" : "outline"} size="sm" onClick={() => setViewMode("list")}>
-              <List className="h-4 w-4" />
-            </Button>
-          </div>
+        {/* Results */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            {loading ? "Loading..." : `${items.length} items found`}
+          </h2>
+          <p className="text-gray-600">
+            Discover sustainable fashion items from our community
+          </p>
         </div>
 
-        {/* Items Grid/List */}
-        {viewMode === "grid" ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredItems.map((item) => (
-              <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="aspect-square relative">
-                  <Image src={item.image || "/placeholder.svg"} alt={item.title} fill className="object-cover" />
-                  <Badge className="absolute top-2 right-2 bg-green-600">{item.points} pts</Badge>
+        {/* Items Grid */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <div className="aspect-square bg-gray-200 rounded-t-lg"></div>
+                <CardContent className="p-4">
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : items.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {items.map((item: any) => (
+              <Card key={item._id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="aspect-square relative bg-gray-100">
+                  {item.images?.[0] ? (
+                    <Image
+                      src={item.images[0]}
+                      alt={item.title}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Package className="h-12 w-12 text-gray-400" />
+                    </div>
+                  )}
+                  <div className="absolute top-2 left-2">
+                    <Badge variant="secondary">{item.points} pts</Badge>
+                  </div>
+                  <div className="absolute top-2 right-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white"
+                      onClick={() => handleLike(item._id)}
+                    >
+                      <Heart className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
                 <CardContent className="p-4">
-                  <h3 className="font-semibold text-gray-900 mb-1">{item.title}</h3>
-                  <p className="text-sm text-gray-600 mb-2">by {item.uploader}</p>
-                  <div className="flex justify-between items-center text-sm mb-3">
-                    <span className="text-gray-500">Size {item.size}</span>
-                    <Badge variant="outline">{item.condition}</Badge>
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-semibold text-lg truncate flex-1">{item.title}</h3>
                   </div>
-                  <p className="text-xs text-gray-500 mb-3">{item.location}</p>
-                  <Link href={`/item/${item.id}`}>
-                    <Button className="w-full" size="sm">
-                      View Details
+                  <p className="text-sm text-gray-600 mb-3">{item.category}</p>
+                  
+                  <div className="flex items-center gap-2 mb-3">
+                    <Badge variant="outline" className="text-xs">Size {item.size}</Badge>
+                    <Badge variant="outline" className="text-xs">{item.condition}</Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {item.location || "Unknown"}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(item.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+
+                  {/* User Info */}
+                  <div className="flex items-center gap-2 mb-3 pt-3 border-t">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={item.user?.avatar} />
+                      <AvatarFallback className="text-xs">
+                        {item.user?.firstName?.[0]}{item.user?.lastName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <Link 
+                      href={`/profile/${item.user?._id}`}
+                      className="text-sm font-medium text-gray-700 hover:text-gray-900 truncate"
+                    >
+                      {item.user?.firstName} {item.user?.lastName}
+                    </Link>
+                    <div className="flex items-center gap-1 ml-auto">
+                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                      <span className="text-xs">4.8</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Link href={`/item/${item._id}`} className="flex-1">
+                      <Button className="w-full" size="sm">
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Details
+                      </Button>
+                    </Link>
+                    <Button variant="outline" size="sm">
+                      <ArrowUpDown className="h-4 w-4" />
                     </Button>
-                  </Link>
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         ) : (
-          <div className="space-y-4">
-            {filteredItems.map((item) => (
-              <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="flex">
-                  <div className="w-32 h-32 relative">
-                    <Image src={item.image || "/placeholder.svg"} alt={item.title} fill className="object-cover" />
-                  </div>
-                  <div className="flex-1 p-4 flex justify-between">
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-1">{item.title}</h3>
-                      <p className="text-sm text-gray-600 mb-2">by {item.uploader}</p>
-                      <div className="flex items-center gap-4 text-sm text-gray-500 mb-2">
-                        <span>Size {item.size}</span>
-                        <Badge variant="outline">{item.condition}</Badge>
-                        <span>{item.location}</span>
-                      </div>
-                      <Badge className="bg-green-600">{item.points} points</Badge>
-                    </div>
-                    <div className="flex items-center">
-                      <Link href={`/item/${item.id}`}>
-                        <Button>View Details</Button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {filteredItems.length === 0 && (
-          <div className="text-center py-12">
-            <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No items found</h3>
-            <p className="text-gray-600">Try adjusting your search or filters</p>
-          </div>
+          <Card>
+            <CardContent className="p-8 text-center">
+              <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No items found</h3>
+              <p className="text-gray-600 mb-4">
+                Try adjusting your search criteria or browse all items.
+              </p>
+              <div className="flex gap-2 justify-center">
+                <Button variant="outline" onClick={() => {
+                  setSearchTerm("")
+                  setSelectedCategory("all")
+                  setSelectedSize("all")
+                  loadItems()
+                }}>
+                  Clear Filters
+                </Button>
+                {user && (
+                  <Link href="/add-item">
+                    <Button>
+                      Add Your First Item
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>
