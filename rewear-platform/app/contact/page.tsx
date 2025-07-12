@@ -93,14 +93,14 @@ export default function ContactPage() {
                   <Mail className="h-5 w-5 text-green-600" />
                   <div>
                     <p className="font-medium">Email</p>
-                    <p className="text-sm text-gray-600">hello@rewear.com</p>
+                    <p className="text-sm text-gray-600">rewear@codeblooded.com</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <Phone className="h-5 w-5 text-green-600" />
                   <div>
                     <p className="font-medium">Phone</p>
-                    <p className="text-sm text-gray-600">+1 (555) 123-4567</p>
+                    <p className="text-sm text-gray-600">+91 76004 93108</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -108,9 +108,9 @@ export default function ContactPage() {
                   <div>
                     <p className="font-medium">Address</p>
                     <p className="text-sm text-gray-600">
-                      123 Sustainable Street
+                      LJ University
                       <br />
-                      San Francisco, CA 94102
+                      Ahmedabad, Gujarat, India
                     </p>
                   </div>
                 </div>
@@ -119,7 +119,7 @@ export default function ContactPage() {
                   <div>
                     <p className="font-medium">Support Hours</p>
                     <p className="text-sm text-gray-600">
-                      Mon-Fri: 9AM-6PM PST
+                      Mon-Fri: 8AM-3PM PST
                       <br />
                       Sat-Sun: 10AM-4PM PST
                     </p>
@@ -250,7 +250,7 @@ export default function ContactPage() {
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl font-bold text-green-600">S</span>
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-1">Sarvesh Murlidhar</h3>
+                <h3 className="font-semibold text-gray-900 mb-1">Sarvesh Mudaliar</h3>
                 <p className="text-sm text-gray-600 mb-3">Co-Founder & CEO</p>
                 <a href="mailto:sarvesh@rewear.com" className="text-green-600 hover:text-green-700 text-sm">
                   sarvesh@rewear.com
@@ -360,7 +360,7 @@ export default function ContactPage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 ReWear. All rights reserved.</p>
+            <p>&copy; 2025 ReWear. All rights reserved.</p>
           </div>
         </div>
       </footer>
